@@ -93,16 +93,6 @@ jobs:
           # because we monkeypatch typing under some circumstances.
           python -c 'import typing_extensions; import test.__main__' test_typing -v
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
-        if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') }}
-        with:
-          token: ${{ secrets.CODECOV_ORG_TOKEN }}
-          flags: ${{ matrix.python-version }}
-          directory: src
-          fail_ci_if_error: true
-          verbose: true
-
       - name: Test CPython patched typing test suite
         # Test suite fails on PyPy even without typing_extensions
         if: ${{ !startsWith(matrix.python-version, 'pypy') }}
