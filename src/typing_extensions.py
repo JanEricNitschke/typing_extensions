@@ -1182,8 +1182,14 @@ else:
 
                 if sys.version_info <= (3, 14):
                     annotations.update(base_dict.get('__annotations__', {}))
-                required_keys.update(base_dict.get('__required_keys__', ()))
-                optional_keys.update(base_dict.get('__optional_keys__', ()))
+                base_required = base_dict.get('__required_keys__', set())
+                required_keys |= base_required
+                optional_keys -= base_required
+
+                base_optional = base_dict.get('__optional_keys__', set())
+                required_keys -= base_optional
+                optional_keys |= base_optional
+
                 readonly_keys.update(base_dict.get('__readonly_keys__', ()))
                 mutable_keys.update(base_dict.get('__mutable_keys__', ()))
 
@@ -1211,15 +1217,25 @@ else:
                 qualifiers = set(_get_typeddict_qualifiers(annotation_type))
 
                 if Required in qualifiers:
-                    required_keys.add(annotation_key)
+                    is_required = True
                 elif NotRequired in qualifiers:
-                    optional_keys.add(annotation_key)
-                elif total:
+                    is_required = False
+                else:
+                    is_required = total
+
+                if is_required:
                     required_keys.add(annotation_key)
+                    optional_keys.discard(annotation_key)
                 else:
                     optional_keys.add(annotation_key)
+                    required_keys.discard(annotation_key)
+
                 if ReadOnly in qualifiers:
-                    mutable_keys.discard(annotation_key)
+                    # if annotation_key in mutable_keys:
+                    #     raise TypeError(
+                    #         f"Cannot override mutable key {annotation_key!r}"
+                    #         " with read-only key"
+                    #     )
                     readonly_keys.add(annotation_key)
                 else:
                     mutable_keys.add(annotation_key)
