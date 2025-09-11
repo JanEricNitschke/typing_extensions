@@ -108,13 +108,16 @@ jobs:
           fi
           # Patch typing_extensions.py
           cat <<'EOF' >> typing_extensions.py
-          TypedDict.__module__ = "typing"
           def __getattr__(name):
               return getattr(typing, name)
           EOF
           curl -fsSL "https://raw.githubusercontent.com/python/cpython/$BRANCH/Lib/test/test_typing.py" \
-          | sed 's/from typing /from typing_extensions /g; s/import typing/import typing_extensions as typing/g' \
-          | python -
+            | sed -E \
+                -e "s/from typing /from typing_extensions /g" \
+                -e "s/import typing/import typing_extensions as typing/g" \
+                -e "s/self\.assertEqual\(([a-zA-Z_][a-zA-Z0-9_\.]*), 'typing'(, [^)]*)?\)/self.assertIn(\1, ('typing', 'typing_extensions')\2)/g" \
+            | python -
+
 
   create-issue-on-failure:
     name: Create an issue if daily tests failed
