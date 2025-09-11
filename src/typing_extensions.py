@@ -1231,11 +1231,11 @@ else:
                     required_keys.discard(annotation_key)
 
                 if ReadOnly in qualifiers:
-                    # if annotation_key in mutable_keys:
-                    #     raise TypeError(
-                    #         f"Cannot override mutable key {annotation_key!r}"
-                    #         " with read-only key"
-                    #     )
+                    if annotation_key in mutable_keys:
+                        raise TypeError(
+                            f"Cannot override mutable key {annotation_key!r}"
+                            " with read-only key"
+                        )
                     readonly_keys.add(annotation_key)
                 else:
                     mutable_keys.add(annotation_key)
