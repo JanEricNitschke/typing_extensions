@@ -108,6 +108,7 @@ jobs:
           fi
           # Patch typing_extensions.py
           cat <<'EOF' >> typing_extensions.py
+          Protocol.__module__ = 'typing'
           def __getattr__(name):
               return getattr(typing, name)
           EOF
@@ -116,6 +117,9 @@ jobs:
                 -e "s/from typing /from typing_extensions /g" \
                 -e "s/import typing/import typing_extensions as typing/g" \
                 -e "s/self\.assertEqual\(([a-zA-Z_][a-zA-Z0-9_\.]*), 'typing'(, [^)]*)?\)/self.assertIn(\1, ('typing', 'typing_extensions')\2)/g" \
+                -e "s/self.assertEqual(typing.AsyncContextManager[int].__args__, (int,))/self.assertEqual(typing.AsyncContextManager[int].__args__, (int, Optional[bool]))/g" \
+                -e "s/typing.AsyncContextManager[int, str]/typing.AsyncContextManager[int, str, float]/g" \
+                -e "s/NOT_A_BASE_TYPE = \"type 'typing\.%s' is not an acceptable base type\"/NOT_A_BASE_TYPE = r\"type '(?:typing|typing_extensions)\\.%s' is not an acceptable base type\"/g" \
             | python -
 
 
