@@ -614,10 +614,11 @@ else:
 _PROTO_ALLOWLIST = {
     'collections.abc': [
         'Callable', 'Awaitable', 'Iterable', 'Iterator', 'AsyncIterable',
-        'AsyncIterator','Hashable', 'Sized', 'Container', 'Collection',
-        'Reversible', 'Buffer'
+        'AsyncIterator', 'Hashable', 'Sized', 'Container', 'Collection',
+        'Reversible', 'Buffer',
     ],
     'contextlib': ['AbstractContextManager', 'AbstractAsyncContextManager'],
+    'io': ['Reader', 'Writer'],
     'typing_extensions': ['Buffer'],
     'os': ['PathLike'],
 }
@@ -656,7 +657,7 @@ def _caller(depth=1, default='__main__'):
 # `__match_args__` attribute was removed from protocol members in 3.13,
 # we want to backport this change to older Python versions.
 # Breakpoint: https://github.com/python/cpython/pull/110683
-if sys.version_info >= (3, 13):
+if sys.version_info >= (3, 14):
     Protocol = typing.Protocol
 else:
     def _allow_reckless_class_checks(depth=2):
@@ -665,28 +666,6 @@ else:
         issubclass() on the whole MRO of a user class, which may contain protocols.
         """
         return _caller(depth) in {'abc', 'functools', None}
-
-    def _no_init_or_replace_init(self, *args, **kwargs):
-        cls = type(self)
-
-        if getattr(cls, "_is_protocol", False):
-            raise TypeError("Protocols cannot be instantiated")
-
-        if cls.__init__ is not _no_init_or_replace_init:
-            return
-
-        for base in cls.__mro__:
-            init = base.__dict__.get("__init__", _no_init_or_replace_init)
-            if init is not _no_init_or_replace_init:
-                cls.__init__ = init
-                break
-        else:
-            cls.__init__ = object.__init__
-
-        cls.__init__(self, *args, **kwargs)
-
-
-    _no_init_or_replace_init = getattr(typing, "_no_init_or_replace_init", _no_init_or_replace_init)
 
     def _type_check_issubclass_arg_1(arg):
         """Raise TypeError if `arg` is not an instance of `type`
@@ -851,7 +830,7 @@ else:
 
             # Prohibit instantiation for protocol classes
             if cls._is_protocol and cls.__init__ is Protocol.__init__:
-                cls.__init__ = _no_init_or_replace_init
+                cls.__init__ = typing._no_init_or_replace_init
 
 
 # Breakpoint: https://github.com/python/cpython/pull/113401
@@ -2670,6 +2649,10 @@ elif hasattr(typing, "TypeVarTuple"):  # 3.11+
                 )
 
             tvt.__typing_prepare_subst__ = _typevartuple_prepare_subst
+            def __mro_entries__(self, bases):
+                raise TypeError("Cannot subclass an instance of TypeVarTuple.")
+            tvt.__mro_entries__ =  __mro_entries__
+
             return tvt
 
         def __init_subclass__(self, *args, **kwds):
@@ -2753,7 +2736,12 @@ else:  # <=3.10
 
         def __init_subclass__(self, *args, **kwds):
             if '_root' not in kwds:
-                raise TypeError("Cannot subclass special typing classes")
+                raise TypeError(
+                    f"type '{__name__}.TypeVarTuple' is not an acceptable base type"
+                )
+
+        def __mro_entries__(self, bases):
+            raise TypeError("Cannot subclass an instance of TypeVarTuple.")
 
 
 if hasattr(typing, "reveal_type"):  # 3.11+
