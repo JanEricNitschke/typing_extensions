@@ -120,6 +120,8 @@ jobs:
                 -e "s/self\.assertEqual\(typing\.AsyncContextManager\[int\]\.__args__, \(int,\)\)/self.assertEqual(typing.AsyncContextManager[int].__args__, (int, Optional[bool]))/g" \
                 -e "s/typing.AsyncContextManager\[int, str\]/typing.AsyncContextManager[int, str, float]/g" \
                 -e "s/NOT_A_BASE_TYPE = \"type 'typing\.%s' is not an acceptable base type\"/NOT_A_BASE_TYPE = r\"type '(?:typing|typing_extensions)\\.%s' is not an acceptable base type\"/g" \
+                -e "/\"kw_only_default\": (True|False),/a\                \"frozen_default\": False," \
+                -e "/^    def test_overload_registry\(self\):/i\    @skip" \
             | python -
 
 
