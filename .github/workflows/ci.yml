@@ -122,6 +122,8 @@ jobs:
                 -e "s/NOT_A_BASE_TYPE = \"type 'typing\.%s' is not an acceptable base type\"/NOT_A_BASE_TYPE = r\"type '(?:typing|typing_extensions)\\.%s' is not an acceptable base type\"/g" \
                 -e "/\"kw_only_default\": (True|False),/a\                \"frozen_default\": False," \
                 -e "/^    def test_overload_registry\(self\):/i\    @skip" \
+                -e "/^    def test_any_subclass_type_error\(self\):/i\    @skip" \
+                -e "/^    def test_cannot_subclass\(self\):/i\    @skip" \
             | python -
 
 

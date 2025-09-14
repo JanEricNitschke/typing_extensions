@@ -2579,12 +2579,10 @@ else:  # <=3.11
         msg = "Parameters to generic types must be types."
         arg = typing._type_check(arg, msg, is_argument=True)
 
-        # Original checks
         if ((isinstance(arg, typing._GenericAlias) and arg.__origin__ is typing.Unpack) or
             (isinstance(arg, typing.GenericAlias) and getattr(arg, '__unpacked__', False))):
             raise TypeError(f"{arg} is not valid as type argument")
 
-        # Extra check for typing_extensions.Unpack
         if (isinstance(arg, typing._GenericAlias) and arg.__origin__ is Unpack):
             raise TypeError(f"{arg} is not valid as type argument")
 
