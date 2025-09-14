@@ -132,6 +132,10 @@ jobs:
           N
           s/with self\.assertRaises\(TypeError\):\n[[:space:]]*C\[\.\.\.\]/self.assertEqual(C[...], Concatenate[int, ...])/
           }' \
+                -e "s/self\.assertEqual\(both_hints\['right'\], Optional\[Node\[T\]\]\)/self.assertEqual(both_hints['right'], Node[T])/g" \
+                -e "s/self\.assertEqual\(both_hints\['stuff'\], Optional\[int\]\)/self.assertEqual(both_hints['stuff'], int)/g" \
+                -e "s/self\.assertEqual\(right_hints\['node'\], Optional\[Node\[T\]\]\)/self.assertEqual(right_hints['node'], Node[T])/g" \
+                -e "/^[[:space:]]*self\.assertEqual\(both_hints\['left'\], both_hints\['right'\]\)/d" \
             | python -
 
 
