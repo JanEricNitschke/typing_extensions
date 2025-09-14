@@ -124,6 +124,14 @@ jobs:
                 -e "/^    def test_overload_registry\(self\):/i\    @skip" \
                 -e "/^    def test_any_subclass_type_error\(self\):/i\    @skip" \
                 -e "/^    def test_cannot_subclass\(self\):/i\    @skip" \
+                -e '/with self\.assertRaises\(TypeError\):/{
+          N
+          s/with self\.assertRaises\(TypeError\):\n[[:space:]]*C\[int, \.\.\.\]/self.assertEqual(C[int, ...], Concatenate[int, ...])/
+          }' \
+                -e '/with self\.assertRaises\(TypeError\):/{
+          N
+          s/with self\.assertRaises\(TypeError\):\n[[:space:]]*C\[\.\.\.\]/self.assertEqual(C[...], Concatenate[int, ...])/
+          }' \
             | python -
 
 
